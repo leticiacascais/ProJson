@@ -1,0 +1,4 @@
+package projson
+
+class JsonVisitor {
+}
