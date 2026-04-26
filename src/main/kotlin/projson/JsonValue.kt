@@ -1,4 +1,6 @@
 package projson
 
-class JsonValue {
+
+sealed interface JsonValue {
+    override fun toString(): String
 }
