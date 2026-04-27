@@ -1,4 +1,5 @@
 package projson
 
-class Main {
+fun main() {
+
 }
