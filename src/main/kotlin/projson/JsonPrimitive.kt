@@ -13,4 +13,8 @@ data class JsonPrimitive(
             else -> throw IllegalArgumentException("Valor inválido")
         }
     }
+
+    override fun accept(visitor: JsonVisitor) {
+        visitor.visitPrimitive(this)
+    }
 }

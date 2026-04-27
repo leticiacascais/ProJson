@@ -32,5 +32,5 @@ class JsonObjectTest {
 
             assertNull(obj.getProperty("project"))
         }
-    
+
     }

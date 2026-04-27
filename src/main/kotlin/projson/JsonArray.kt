@@ -19,4 +19,9 @@ class JsonArray : JsonValue {
     override fun toString(): String {
         return elements.joinToString(prefix = "[", postfix = "]")
     }
+
+    override fun accept(visitor: JsonVisitor) {
+        visitor.visitArray(this)
+    }
+
 }

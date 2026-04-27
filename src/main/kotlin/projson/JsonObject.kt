@@ -20,4 +20,9 @@ class JsonObject : JsonValue {
         return properties.entries.joinToString(prefix = "{", postfix = "}") { (key, value) -> "\"$key\": $value"
         }
     }
+
+    override fun accept(visitor: JsonVisitor) {
+        visitor.visitObject(this)
+    }
+
 }
