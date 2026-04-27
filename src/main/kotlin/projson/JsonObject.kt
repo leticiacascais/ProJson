@@ -23,6 +23,10 @@ class JsonObject : JsonValue {
 
     override fun accept(visitor: JsonVisitor) {
         visitor.visitObject(this)
+
+        for (value in properties.values) {
+            value.accept(visitor)
+        }
     }
 
 }

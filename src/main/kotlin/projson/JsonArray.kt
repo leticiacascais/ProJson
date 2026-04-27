@@ -22,6 +22,10 @@ class JsonArray : JsonValue {
 
     override fun accept(visitor: JsonVisitor) {
         visitor.visitArray(this)
+
+        for (value in elements) {
+            value.accept(visitor)
+        }
     }
 
 }
