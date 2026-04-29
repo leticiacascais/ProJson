@@ -1,11 +1,17 @@
 package projson
 
+import projson.model.jsonPrimitiveFromAny
+
 class JsonObject : JsonValue {
 
     private val properties = mutableMapOf<String, JsonValue>()
 
     fun setProperty(key: String, value: JsonValue) {
         properties[key] = value
+    }
+
+    fun setProperty(key: String, value: Any?) {
+        properties[key] = jsonPrimitiveFromAny(value)
     }
 
     fun getProperty(key: String): JsonValue? {
@@ -15,6 +21,8 @@ class JsonObject : JsonValue {
     fun removeProperty(key: String) {
         properties.remove(key)
     }
+
+    fun keys(): Set<String> = properties.keys
 
     override fun toString(): String {
         return properties.entries.joinToString(prefix = "{", postfix = "}") { (key, value) -> "\"$key\": $value"

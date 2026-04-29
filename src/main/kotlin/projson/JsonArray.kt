@@ -1,11 +1,17 @@
 package projson
 
+import projson.model.jsonPrimitiveFromAny
+
 class JsonArray : JsonValue {
 
     private val elements = mutableListOf<JsonValue>()
 
     fun add(value: JsonValue) {
         elements.add(value)
+    }
+
+    fun add(value: Any?) {
+        elements.add(jsonPrimitiveFromAny(value))
     }
 
     fun remove(value: JsonValue) {
@@ -15,6 +21,8 @@ class JsonArray : JsonValue {
     fun get(index: Int): JsonValue {
         return elements[index]
     }
+
+    fun size(): Int = elements.size
 
     override fun toString(): String {
         return elements.joinToString(prefix = "[", postfix = "]")
