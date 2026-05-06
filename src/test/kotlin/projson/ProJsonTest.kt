@@ -14,7 +14,7 @@ import kotlin.test.assertTrue
 
 class ProJsonTest {
 
-    // Fase 1: data class sem @JsonString (serializa como objeto com $type)
+    //Fase 1: data class sem @JsonString (serializa como objeto com $type)
     data class PlainDate(val day: Int, val month: Int, val year: Int)
 
     // Fase 2: a classe Date pode ser serializada como texto via @JsonString

@@ -1,7 +1,10 @@
 package projson.core
 
-// (Fase 2): contrato do plugin para serializar uma classe como string. 
+//serializers custom usados pela annotation @JsonString
+//como o objeto deve ser convertido para JSON
 interface JsonStringSerializer<T : Any> {
+
+    //converte um objeto para a sua representação textual JSON
     fun serialize(value: T): String
 }
 
