@@ -1,6 +1,6 @@
 package projson
 
-// Enunciado (Fase 1): Visitor para travessia do modelo JSON. 
+//Visitor para travessia do modelo JSON
 interface JsonVisitor {
 
     fun visitPrimitive(value: JsonPrimitive)
