@@ -1,5 +1,6 @@
 package projson
 
+import projson.core.ProJson
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -43,5 +44,14 @@ class JsonArrayTest {
         val array = JsonArray()
 
         assertEquals("[]", array.toString())
+    }
+
+    @Test
+    fun testJsonArray() {
+        val list = listOf("a", null, "b")
+        val json = ProJson().toJson(list) as JsonArray
+        json.add("c")
+
+        assertEquals("[\"a\", null, \"b\", \"c\"]", json.toString())
     }
 }
