@@ -13,31 +13,41 @@ import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.full.findAnnotation
 
+//classe responsável pela serialização de objetos para JSON
 class ProJson {
 
+    //guarda estado da serialização
     private data class RefState(
+        //associa ao respetivo id
         val ids: IdentityHashMap<Any, String> = IdentityHashMap(),
+        //objetos que precisam de id
         val shouldHaveId: MutableSet<Any> = java.util.Collections.newSetFromMap(IdentityHashMap())
     )
 
-    // objetos → `JsonObject`, coleções → `JsonArray`, com customização via anotações. 
+    //objetos: `JsonObject`, coleções: `JsonArray`, com customização via anotações.
     fun toJson(value: Any?): JsonValue {
         val state = RefState()
-        // decidir antecipadamente quais instâncias precisam de `$id`.
+        //decidir antecipadamente quais instâncias precisam de `$id`.
         preScanReferences(value, state)
+        //serialização principal
         return toJsonInternal(value, state)
     }
 
+    //identifica referências antes da serialização
     private fun preScanReferences(root: Any?, state: RefState) {
         val visited = java.util.Collections.newSetFromMap(IdentityHashMap<Any, Boolean>())
         preScanAny(root, state, visited)
     }
 
+    //percorre os valores
     private fun preScanAny(value: Any?, state: RefState, visited: MutableSet<Any>) {
         if (value == null) return
+        //já está serializado
         if (value is JsonValue) return
+        //não precisam de processamento
         if (value is String || value is Number || value is Boolean) return
 
+        //se for map, serializa como objeto JSON
         if (value is Map<*, *>) {
             for ((k, v) in value.entries) {
                 preScanAny(v, state, visited)
@@ -45,25 +55,31 @@ class ProJson {
             return
         }
 
+        //Collections elemento a elemento
         if (value is Iterable<*>) {
             for (e in value) preScanAny(e, state, visited)
             return
         }
 
+        //evita repetição
         if (!visited.add(value)) return
 
         val kClass = value::class
 
-        // classes com `@JsonString` não são expandidas em propriedades.
+        //classes com `@JsonString` são serializadas como String
+        //não são expandidas em propriedades
         if (kClass.hasAnnotation<JsonString>()) return
 
+        //reflection: percorre todas as propriedades da classe
         for (prop in kClass.declaredMemberProperties) {
+            //ignora o jsonignore
             if (prop.hasAnnotation<JsonIgnore>()) continue
             val propValue = prop.getter.call(value)
 
+            //ref: marca para receber id
             val isReference = prop.hasAnnotation<Reference>()
             if (isReference) {
-                // alvo de `$ref` deve possuir `$id`.
+                //alvo de `$ref` deve possuir `$id`.
                 markReferenced(propValue, state)
                 preScanAny(propValue, state, visited)
             } else {
@@ -72,29 +88,36 @@ class ProJson {
         }
     }
 
+    //objeto como alvo de ref JSON
     private fun markReferenced(value: Any?, state: RefState) {
         if (value == null) return
         if (value is JsonValue) return
         if (value is String || value is Number || value is Boolean) return
         if (value is Map<*, *>) return
 
+        //collection podem conter múltiplos objetos
         if (value is Iterable<*>) {
             for (e in value) markReferenced(e, state)
             return
         }
 
+        //apenas gera id uma vez por objeto
         state.ids.getOrPut(value) { UUID.randomUUID().toString() }
         state.shouldHaveId.add(value)
     }
 
+    //converte qualquer valor kotlin em JsonValue
     private fun toJsonInternal(value: Any?, state: RefState): JsonValue {
         if (value == null) return JsonPrimitive(null)
+        //já pronto
         if (value is JsonValue) return value
-
+        //primitivas JSON
         if (value is String || value is Number || value is Boolean) {
             return JsonPrimitive(value)
         }
 
+        //maps tornam-se JsonObject
+        //não recebem type
         if (value is Map<*, *>) {
             val obj = JsonObject()
             for ((k, v) in value.entries) {
@@ -105,6 +128,7 @@ class ProJson {
             return obj
         }
 
+        //collection torna-se JsonArray
         if (value is Iterable<*>) {
             val arr = JsonArray()
             for (e in value) {
@@ -113,6 +137,7 @@ class ProJson {
             return arr
         }
 
+        //tratados como object
         return serializeObject(value, state)
     }
 
@@ -121,7 +146,7 @@ class ProJson {
 
         if (kClass.hasAnnotation<JsonString>()) {
             val jsonString = kClass.findAnnotation<JsonString>()!!
-            // converter instância para texto via serializer.
+            //converter instância para texto via serializer.
             val serializer = instantiateSerializer(jsonString.serializer)
             @Suppress("UNCHECKED_CAST")
             val text = (serializer as JsonStringSerializer<Any>).serialize(instance)
@@ -131,7 +156,7 @@ class ProJson {
         val obj = JsonObject()
 
         if (state.shouldHaveId.contains(instance)) {
-            // Enunciado (References): `$id` só em objetos que são alvo de referência.
+            //`$id` só em objetos que são alvo de referência
             val id = state.ids.getOrPut(instance) { UUID.randomUUID().toString() }
             obj.setProperty("\$id", JsonPrimitive(id))
         }
@@ -178,14 +203,14 @@ class ProJson {
         if (value is Map<*, *>) return toJsonInternal(value, state)
         if (value is Iterable<*>) return toJsonWithReferences(value, state)
 
-        // em campos @Reference, objetos viram {"$ref": "<uuid>"}.
+        //nos campos @Reference, objetos tornam-se {"$ref": "<uuid>"}.
         val id = state.ids.getOrPut(value) { UUID.randomUUID().toString() }
         state.shouldHaveId.add(value)
         return JsonReference(id)
     }
 
     private fun instantiateSerializer(kClass: KClass<out JsonStringSerializer<*>>): JsonStringSerializer<*> {
-        // depois de obter um `KClass`, instanciar com `createInstance()`.
+        //depois de obter um `KClass`, instanciar com `createInstance()`
         kClass.objectInstance?.let { return it }
         return kClass.createInstance()
     }
