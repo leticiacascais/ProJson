@@ -20,8 +20,10 @@ class ProJson {
         val shouldHaveId: MutableSet<Any> = java.util.Collections.newSetFromMap(IdentityHashMap())
     )
 
+    // objetos → `JsonObject`, coleções → `JsonArray`, com customização via anotações. 
     fun toJson(value: Any?): JsonValue {
         val state = RefState()
+        // decidir antecipadamente quais instâncias precisam de `$id`.
         preScanReferences(value, state)
         return toJsonInternal(value, state)
     }
@@ -52,6 +54,7 @@ class ProJson {
 
         val kClass = value::class
 
+        // classes com `@JsonString` não são expandidas em propriedades.
         if (kClass.hasAnnotation<JsonString>()) return
 
         for (prop in kClass.declaredMemberProperties) {
@@ -60,6 +63,7 @@ class ProJson {
 
             val isReference = prop.hasAnnotation<Reference>()
             if (isReference) {
+                // alvo de `$ref` deve possuir `$id`.
                 markReferenced(propValue, state)
                 preScanAny(propValue, state, visited)
             } else {
@@ -117,7 +121,7 @@ class ProJson {
 
         if (kClass.hasAnnotation<JsonString>()) {
             val jsonString = kClass.findAnnotation<JsonString>()!!
-            // plugin mechanism: classes anotadas com @JsonString são serializadas como texto.
+            // converter instância para texto via serializer.
             val serializer = instantiateSerializer(jsonString.serializer)
             @Suppress("UNCHECKED_CAST")
             val text = (serializer as JsonStringSerializer<Any>).serialize(instance)
@@ -127,11 +131,12 @@ class ProJson {
         val obj = JsonObject()
 
         if (state.shouldHaveId.contains(instance)) {
-            // objetos que são alvo de "$ref" precisam de um "$id".
+            // Enunciado (References): `$id` só em objetos que são alvo de referência.
             val id = state.ids.getOrPut(instance) { UUID.randomUUID().toString() }
             obj.setProperty("\$id", JsonPrimitive(id))
         }
 
+        // Enunciado (Fase 1): `$type` em objetos (exceto Map).
         obj.setProperty("\$type", JsonPrimitive(kClass.simpleName ?: kClass.toString()))
 
         for (prop in kClass.declaredMemberProperties) {

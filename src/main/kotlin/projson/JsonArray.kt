@@ -2,6 +2,7 @@ package projson
 
 import projson.model.jsonPrimitiveFromAny
 
+// (Fase 1): JSON array (List<JsonValue>) com API de leitura/escrita. 
 class JsonArray : JsonValue {
 
     private val elements = mutableListOf<JsonValue>()
@@ -11,6 +12,7 @@ class JsonArray : JsonValue {
     }
 
     fun add(value: Any?) {
+        // só permitir primitivos JSON na escrita direta.
         elements.add(jsonPrimitiveFromAny(value))
     }
 

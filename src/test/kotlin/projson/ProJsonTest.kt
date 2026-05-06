@@ -14,10 +14,10 @@ import kotlin.test.assertTrue
 
 class ProJsonTest {
 
-    // Phase 1: data class sem @JsonString (serializa como objeto com $type)
+    // Fase 1: data class sem @JsonString (serializa como objeto com $type)
     data class PlainDate(val day: Int, val month: Int, val year: Int)
 
-    // Phase 2: como no enunciado, a classe Date pode ser serializada como texto via @JsonString
+    // Fase 2: a classe Date pode ser serializada como texto via @JsonString
     @JsonString(DateAsText::class)
     data class Date(val day: Int, val month: Int, val year: Int)
 
@@ -38,6 +38,7 @@ class ProJsonTest {
 
     @Test
     fun testCollectionGeneratesArrayAndAllowsManipulation() {
+        // Fase 1: coleção → `JsonArray` + manipulação (`add`)
         val list = listOf("a", null, "b")
         val json = ProJson().toJson(list) as JsonArray
         json.add("c")
@@ -46,6 +47,7 @@ class ProJsonTest {
 
     @Test
     fun testObjectGeneratesTypeAndAllowsPropertyChange() {
+        // Fase 1: objeto → `JsonObject` com `$type` + manipulação (`setProperty`)
         val d = PlainDate(31, 4, 2026)
         val json = ProJson().toJson(d) as JsonObject
         json.setProperty("year", 2027)
@@ -54,12 +56,14 @@ class ProJsonTest {
 
     @Test
     fun testMapHasNoTypeProperty() {
+        // Fase 1: `Map` → `JsonObject` sem `$type`
         val json = ProJson().toJson(mapOf("a" to 1, "b" to "x")) as JsonObject
         assertEquals("{\"a\": 1, \"b\": \"x\"}", json.toString())
     }
 
     @Test
     fun testReferencesAndPropertyCustomization() {
+        // Fase 2: `@Reference` + `@JsonProperty` + `@JsonIgnore`
         val t1 = Task("T1", PlainDate(30, 2, 2026), emptyList())
         val t2 = Task("T2", PlainDate(31, 4, 2026), emptyList())
         val t3 = Task("T3", null, listOf(t1, t2))
@@ -79,6 +83,7 @@ class ProJsonTest {
 
     @Test
     fun testJsonStringPluginSerializesAsText() {
+        // Fase 2 (Plugin): `@JsonString` → array de strings formatadas
         val d1 = Date(30, 2, 2026)
         val d2 = Date(31, 4, 2026)
         val json = ProJson().toJson(listOf(d1, d2))

@@ -2,6 +2,7 @@ package projson
 
 import projson.model.jsonPrimitiveFromAny
 
+// (Fase 1): JSON object (Map<String, JsonValue>) com API de leitura/escrita. 
 class JsonObject : JsonValue {
 
     private val properties = mutableMapOf<String, JsonValue>()
@@ -11,6 +12,7 @@ class JsonObject : JsonValue {
     }
 
     fun setProperty(key: String, value: Any?) {
+        // só permitir primitivos JSON na escrita direta.
         properties[key] = jsonPrimitiveFromAny(value)
     }
 

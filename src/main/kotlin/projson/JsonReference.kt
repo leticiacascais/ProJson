@@ -1,5 +1,6 @@
 package projson
 
+// (Fase 2): nó especial que representa `{"$ref": "<uuid>"}`. 
 data class JsonReference(
     val reference: String
 ) : JsonValue {

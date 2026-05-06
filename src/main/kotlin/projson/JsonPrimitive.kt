@@ -1,5 +1,6 @@
 package projson
 
+// (Fase 1): primitvo JSON (String/Number/Boolean/null). 
 data class JsonPrimitive(
 
     val value: Any?
