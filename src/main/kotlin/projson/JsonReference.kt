@@ -9,7 +9,6 @@ data class JsonReference(
     }
 
     override fun accept(visitor: JsonVisitor) {
-        //
         visitor.visitReference(this)
     }
 }

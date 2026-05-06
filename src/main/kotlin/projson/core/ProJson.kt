@@ -20,20 +20,8 @@ class ProJson {
         val shouldHaveId: MutableSet<Any> = java.util.Collections.newSetFromMap(IdentityHashMap())
     )
 
-    /**
-     * Phase 1:
-     * - objetos Kotlin → `JsonObject` (com `$type`, exceto Map)
-     * - coleções → `JsonArray`
-     *
-     * Phase 2:
-     * - JSON References: `@Reference` → `{"$ref": "<uuid>"}` e objetos referenciados ganham `"$id"`.
-     * - JSON Object Properties: `@JsonProperty` (renomear) e `@JsonIgnore` (ignorar).
-     * - plugin mechanism: `@JsonString(...)` + `JsonStringSerializer` para serializar como texto.
-     */
     fun toJson(value: Any?): JsonValue {
         val state = RefState()
-        // Precisamos saber *antes* de serializar quais objetos serão alvo de "$ref",
-        // para garantir que eles têm "$id" mesmo que apareçam primeiro “inline”
         preScanReferences(value, state)
         return toJsonInternal(value, state)
     }
@@ -50,7 +38,6 @@ class ProJson {
 
         if (value is Map<*, *>) {
             for ((k, v) in value.entries) {
-                // keys não interessam; values podem conter objetos com @Reference
                 preScanAny(v, state, visited)
             }
             return
@@ -64,11 +51,10 @@ class ProJson {
         if (!visited.add(value)) return
 
         val kClass = value::class
-        // se for @JsonString, vira string no JSON; não precisamos inspecionar propriedades.
+
         if (kClass.hasAnnotation<JsonString>()) return
 
         for (prop in kClass.declaredMemberProperties) {
-            // consulta de anotações via `hasAnnotation`/`findAnnotation`.
             if (prop.hasAnnotation<JsonIgnore>()) continue
             val propValue = prop.getter.call(value)
 
