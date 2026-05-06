@@ -36,9 +36,6 @@ class ProJson {
         val obj = JsonObject()
         obj.setProperty("\$type", JsonPrimitive(kClass.simpleName ?: kClass.toString()))
 
-        // Garante ordem determinística (o teste compara `toString()` literal).
-        // Se houver construtor primário (ex: data class), usamos a ordem dos parâmetros.
-        // Caso contrário, ordenamos alfabeticamente pelo nome da propriedade.
         val propsByName = kClass.declaredMemberProperties
             .filterIsInstance<KProperty1<Any, *>>()
             .associateBy { it.name }
