@@ -1,10 +1,10 @@
 package projson.core
 
-import projson.JsonArray
-import projson.JsonObject
-import projson.JsonPrimitive
-import projson.JsonReference
-import projson.JsonValue
+import projson.model.JsonArray
+import projson.model.JsonObject
+import projson.model.JsonPrimitive
+import projson.model.JsonReference
+import projson.model.JsonValue
 import java.util.IdentityHashMap
 import java.util.UUID
 import kotlin.reflect.KClass

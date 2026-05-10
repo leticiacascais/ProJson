@@ -1,6 +1,7 @@
-package projson
+package projson.model
 
-import projson.model.jsonPrimitiveFromAny
+import projson.model.JsonValue
+import projson.model.JsonVisitor
 
 class JsonObject : JsonValue {
 

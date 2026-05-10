@@ -1,6 +1,7 @@
 package projson
 
-import projson.core.ProJson
+import projson.model.JsonObject
+import projson.model.JsonPrimitive
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull

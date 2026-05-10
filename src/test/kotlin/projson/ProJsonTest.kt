@@ -6,8 +6,8 @@ import projson.core.JsonString
 import projson.core.JsonStringSerializer
 import projson.core.ProJson
 import projson.core.Reference
-import projson.JsonArray
-import projson.JsonObject
+import projson.model.JsonArray
+import projson.model.JsonObject
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
