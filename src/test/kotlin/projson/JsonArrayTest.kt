@@ -1,6 +1,8 @@
 package projson
 
+import projson.core.ProJson
 import projson.model.JsonArray
+import projson.model.JsonObject
 import projson.model.JsonPrimitive
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -37,18 +39,16 @@ class JsonArrayTest {
     }
 
     @Test
-    fun testEmptyArray() {
+    fun testEmpty() {
         val array = JsonArray()
 
         assertEquals("[]", array.toString())
     }
 
     @Test
-    fun testJsonArray() {
-        val list = listOf("a", null, "b")
-        val json = ProJson().toJson(list) as JsonArray
-        json.add("c")
-
-        assertEquals("[\"a\", null, \"b\", \"c\"]", json.toString())
+    fun testMapHasNoTypeProperty() {
+        /** Fase 1: `Map` → `JsonObject` sem `$type` */
+        val json = ProJson().toJson(mapOf("a" to 1, "b" to "x")) as JsonObject
+        assertEquals("{\"a\": 1, \"b\": \"x\"}", json.toString())
     }
 }

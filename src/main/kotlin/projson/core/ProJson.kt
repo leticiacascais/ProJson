@@ -8,11 +8,24 @@ import projson.model.JsonValue
 import java.util.IdentityHashMap
 import java.util.UUID
 import kotlin.reflect.KClass
+import kotlin.reflect.KProperty1
 import kotlin.reflect.full.createInstance
 import kotlin.reflect.full.declaredMemberProperties
-import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.full.findAnnotation
+import kotlin.reflect.full.hasAnnotation
+import kotlin.reflect.full.primaryConstructor
 
+/**
+ * Serializa valores Kotlin para o modelo JSON em memória ([JsonObject], [JsonArray], etc.).
+ *
+ * Suporta:
+ * * **Fase 1:** primitivas, `null`, [Map] (objeto sem `"$type"`), coleções ([Iterable]) como array,
+ *   restantes objetos com `"$type"` e propriedades.
+ * * **Fase 2:** [Reference], [JsonProperty], [JsonIgnore], [JsonString] com [JsonStringSerializer].
+ *
+ * Referências: propriedades anotadas com [Reference] serializam grafos com `"$id"` nos alvos
+ * e `"$ref"` onde a referência aparece; o cliente não gere UUIDs manualmente.
+ */
 class ProJson {
 
     private data class RefState(
@@ -20,6 +33,12 @@ class ProJson {
         val shouldHaveId: MutableSet<Any> = java.util.Collections.newSetFromMap(IdentityHashMap())
     )
 
+    /**
+     * Converte [value] para [JsonValue].
+     *
+     * @param value instância Kotlin, [Map], coleção, primitiva ou `null`
+     * @return modelo JSON correspondente
+     */
     fun toJson(value: Any?): JsonValue {
         val state = RefState()
         preScanReferences(value, state)
@@ -83,37 +102,40 @@ class ProJson {
         state.shouldHaveId.add(value)
     }
 
+    /** Fase 1: núcleo em `when`; fase 2 entra via [RefState] dentro de [serializeObject] e referências. */
     private fun toJsonInternal(value: Any?, state: RefState): JsonValue {
-        if (value == null) return JsonPrimitive(null)
-        if (value is JsonValue) return value
-        if (value is String || value is Number || value is Boolean) {
-            return JsonPrimitive(value)
-        }
-
-        if (value is Map<*, *>) {
-            val obj = JsonObject()
-            for ((k, v) in value.entries) {
-                val key = k as? String
-                    ?: throw IllegalArgumentException("Map keys must be String")
-                obj.setProperty(key, toJsonInternal(v, state))
+        return when (value) {
+            null -> JsonPrimitive(null)
+            is JsonValue -> value
+            is String, is Number, is Boolean -> JsonPrimitive(value)
+            is Map<*, *> -> {
+                val obj = JsonObject()
+                for ((k, v) in value.entries) {
+                    val key = k as? String
+                        ?: throw IllegalArgumentException("Map keys must be String")
+                    obj.setProperty(key, toJsonInternal(v, state))
+                }
+                obj
             }
-            return obj
-        }
-
-        if (value is Iterable<*>) {
-            val arr = JsonArray()
-            for (e in value) {
-                arr.add(toJsonInternal(e, state))
+            is Iterable<*> -> {
+                val arr = JsonArray()
+                for (e in value) {
+                    arr.add(toJsonInternal(e, state))
+                }
+                arr
             }
-            return arr
+            else -> serializeObject(value, state)
         }
-
-        return serializeObject(value, state)
     }
 
+    /**
+     * Fase 1: objeto Kotlin → [JsonObject] com `"$type"` e propriedades (ordem do construtor primário).
+     * Fase 2: acrescenta `@JsonString`, `@JsonIgnore`, `@JsonProperty`, `@Reference` e `"$id"`.
+     */
     private fun serializeObject(instance: Any, state: RefState): JsonValue {
         val kClass = instance::class
 
+        /** Fase 2: serialização como string (plugin) */
         if (kClass.hasAnnotation<JsonString>()) {
             val jsonString = kClass.findAnnotation<JsonString>()!!
             val serializer = instantiateSerializer(jsonString.serializer)
@@ -124,6 +146,7 @@ class ProJson {
 
         val obj = JsonObject()
 
+        /** Fase 2: alvos de referência recebem "$id" /
         if (state.shouldHaveId.contains(instance)) {
             val id = state.ids.getOrPut(instance) { UUID.randomUUID().toString() }
             obj.setProperty("\$id", JsonPrimitive(id))
@@ -131,15 +154,25 @@ class ProJson {
 
         obj.setProperty("\$type", JsonPrimitive(kClass.simpleName ?: kClass.toString()))
 
-        for (prop in kClass.declaredMemberProperties) {
-            if (prop.hasAnnotation<JsonIgnore>()) continue
+        /** Igual à parte 1: mapa nome → propriedade + ordem do construtor; fase 2 ignora @JsonIgnore */
+        val propsByName =
+            kClass.declaredMemberProperties
+                .filterIsInstance<KProperty1<Any, *>>()
+                .filterNot { it.hasAnnotation<JsonIgnore>() }
+                .associateBy { it.name }
 
+        val propsInOrder =
+            kClass.primaryConstructor?.parameters
+                ?.mapNotNull { p -> p.name?.let(propsByName::get) }
+                ?: propsByName.values.sortedBy { it.name }
+
+        for (prop in propsInOrder) {
             val propAnnotation = prop.findAnnotation<JsonProperty>()
             val propName = propAnnotation?.name ?: prop.name
-            val propValue = prop.getter.call(instance)
+            val propValue = prop.get(instance)
 
-            val isReference = prop.hasAnnotation<Reference>()
-            if (isReference) {
+            /** Fase 2: referências → "$ref" (lista ou valor único) /
+            if (prop.hasAnnotation<Reference>()) {
                 obj.setProperty(propName, toJsonWithReferences(propValue, state))
             } else {
                 obj.setProperty(propName, toJsonInternal(propValue, state))
