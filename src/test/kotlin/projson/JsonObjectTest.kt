@@ -13,7 +13,6 @@ class JsonObjectTest {
 
         @Test
         fun testSetProperty() {
-            //manipulação — escrita de propriedades no objeto
             val obj = JsonObject()
             obj.setProperty("name", JsonPrimitive("Paulo"))
             obj.setProperty("age", JsonPrimitive(30))
@@ -23,7 +22,6 @@ class JsonObjectTest {
 
         @Test
         fun testGetProperty() {
-            //manipulação — leitura de propriedades no objeto
             val obj = JsonObject()
             val value = JsonPrimitive("Json")
             obj.setProperty("message", value)
@@ -33,7 +31,6 @@ class JsonObjectTest {
 
         @Test
         fun testRemoveProperty() {
-            //manipulação — remoção de propriedades no objeto
             val obj = JsonObject()
             obj.setProperty("project", JsonPrimitive("JsonPro"))
             obj.removeProperty("project")

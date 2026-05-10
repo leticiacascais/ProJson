@@ -9,7 +9,6 @@ class JsonArrayTest {
 
     @Test
     fun testAddElement() {
-        //manipulação — adicionar elementos ao array
         val array = JsonArray()
         array.add(JsonPrimitive("Json"))
         array.add(JsonPrimitive(10))
@@ -19,7 +18,6 @@ class JsonArrayTest {
 
     @Test
     fun testRemoveElement() {
-        //manipulação — remover elementos do array
         val array = JsonArray()
         val value = JsonPrimitive("Json")
 
@@ -31,7 +29,6 @@ class JsonArrayTest {
 
     @Test
     fun testGetElement() {
-        //leitura — obter elemento por índice
         val array = JsonArray()
         val value = JsonPrimitive(false)
         array.add(value)
@@ -41,7 +38,6 @@ class JsonArrayTest {
 
     @Test
     fun testEmptyArray() {
-        //serialização — array vazio
         val array = JsonArray()
 
         assertEquals("[]", array.toString())

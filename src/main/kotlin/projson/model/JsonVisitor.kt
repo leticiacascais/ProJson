@@ -1,6 +1,5 @@
 package projson.model
 
-//Visitor para travessia do modelo JSON
 interface JsonVisitor {
 
     fun visitPrimitive(value: JsonPrimitive)

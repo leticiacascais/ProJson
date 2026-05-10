@@ -3,7 +3,6 @@ package projson.model
 import projson.model.JsonPrimitive
 import projson.model.JsonValue
 
-//aceita apenas primitivos JSON na escrita (`setProperty`/`add`)
 fun jsonPrimitiveFromAny(value: Any?): JsonValue {
     if (value is JsonValue) return value
     return when (value) {

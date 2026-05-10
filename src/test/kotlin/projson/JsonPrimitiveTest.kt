@@ -7,29 +7,25 @@ import kotlin.test.assertEquals
 class JsonPrimitiveTest {
 
     @Test
-    fun testStringPrimitive() {
-        //string: JSON string com aspas
+    fun testString() {
         val string = JsonPrimitive("hello")
         assertEquals("\"hello\"", string.toString())
     }
 
     @Test
-    fun testNumberPrimitive() {
-        //number: JSON number
+    fun testNumber() {
         val number = JsonPrimitive(13)
         assertEquals("13", number.toString())
     }
 
     @Test
-    fun testBooleanPrimitive() {
-        //boolean: JSON boolean
+    fun testBoolean() {
         val bool = JsonPrimitive(true)
         assertEquals("true", bool.toString())
     }
 
     @Test
-    fun testNullPrimitive() {
-        //null: JSON null
+    fun testNull() {
         val valuenull = JsonPrimitive(null)
         assertEquals("null", valuenull.toString())
     }
