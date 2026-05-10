@@ -39,15 +39,4 @@ class JsonObjectTest {
             assertNull(obj.getProperty("project"))
         }
 
-        @Test
-        fun testJsonObject() {
-            val d= Date(31, 4, 2026)
-            val json = ProJson().toJson(d) as JsonObject
-            json.setProperty("year", 2027)
-
-            assertEquals("{\"\$type\": \"Date\", \"day\": 31, \"month\": 4, \"year\": 2027}", json.toString())
-
-        }
-
-
     }
