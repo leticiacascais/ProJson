@@ -1,8 +1,6 @@
 package projson.model
 
-import projson.model.JsonValue
-import projson.model.JsonVisitor
-
+/** Array JSON: lista ordenada de [JsonValue]. */
 class JsonArray : JsonValue {
 
     private val elements = mutableListOf<JsonValue>()

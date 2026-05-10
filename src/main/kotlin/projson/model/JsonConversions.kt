@@ -1,8 +1,9 @@
 package projson.model
 
-import projson.model.JsonPrimitive
-import projson.model.JsonValue
-
+/**
+ * Converte um valor Kotlin para [JsonPrimitive] (ou devolve [JsonValue] se já for modelo JSON).
+ * Lança se o tipo não for JSON válido na escrita direta.
+ */
 fun jsonPrimitiveFromAny(value: Any?): JsonValue {
     if (value is JsonValue) return value
     return when (value) {

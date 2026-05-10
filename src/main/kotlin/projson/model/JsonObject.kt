@@ -1,8 +1,6 @@
 package projson.model
 
-import projson.model.JsonValue
-import projson.model.JsonVisitor
-
+/** Objeto JSON: mapa de chaves (string) para [JsonValue]. */
 class JsonObject : JsonValue {
 
     private val properties = mutableMapOf<String, JsonValue>()
@@ -32,7 +30,6 @@ class JsonObject : JsonValue {
 
     override fun accept(visitor: JsonVisitor) {
         visitor.visitObject(this)
-
         for (value in properties.values) {
             value.accept(visitor)
         }

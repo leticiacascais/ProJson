@@ -1,8 +1,6 @@
 package projson.model
 
-import projson.model.JsonValue
-import projson.model.JsonVisitor
-
+/** Referência a outro objeto serializado com o mesmo identificador em `"$id"`. */
 data class JsonReference(
 
     val reference: String

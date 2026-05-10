@@ -1,8 +1,6 @@
 package projson.model
 
-import projson.model.JsonValue
-import projson.model.JsonVisitor
-
+/** Valor JSON atómico: [String], [Number], [Boolean] ou `null`. */
 data class JsonPrimitive(
 
     val value: Any?
