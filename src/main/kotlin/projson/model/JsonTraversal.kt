@@ -3,12 +3,7 @@ package projson.model
 /**
  * Percorre todos os nós da árvore JSON em profundidade, na ordem definida por
  * [JsonValue.accept] (pai antes dos filhos).
- *
- * Exemplo: contar primitivos
- * ```kotlin
- * var n = 0
- * json.forEachDepthFirst { if (it is JsonPrimitive) n++ }
- * ```
+ * @param action chamado por nó 
  */
 fun JsonValue.forEachDepthFirst(action: (JsonValue) -> Unit) {
     accept(

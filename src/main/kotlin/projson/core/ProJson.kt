@@ -19,9 +19,9 @@ import kotlin.reflect.full.primaryConstructor
  * Serializa valores Kotlin para o modelo JSON em memória ([JsonObject], [JsonArray], etc.).
  *
  * Suporta:
- * * **Fase 1:** primitivas, `null`, [Map] (objeto sem `"$type"`), coleções ([Iterable]) como array,
- *   restantes objetos com `"$type"` e propriedades.
- * * **Fase 2:** [Reference], [JsonProperty], [JsonIgnore], [JsonString] com [JsonStringSerializer].
+ * Fase 1:** primitivas, `null`, [Map] (objeto sem `"$type"`), coleções ([Iterable]) como array,
+ * restantes objetos com `"$type"` e propriedades.
+ * Fase 2:** [Reference], [JsonProperty], [JsonIgnore], [JsonString] com [JsonStringSerializer].
  *
  * Referências: propriedades anotadas com [Reference] serializam grafos com `"$id"` nos alvos
  * e `"$ref"` onde a referência aparece; o cliente não gere UUIDs manualmente.
@@ -146,7 +146,7 @@ class ProJson {
 
         val obj = JsonObject()
 
-        /** Fase 2: alvos de referência recebem "$id" /
+        /** Fase 2: alvos de referência recebem "$id" */
         if (state.shouldHaveId.contains(instance)) {
             val id = state.ids.getOrPut(instance) { UUID.randomUUID().toString() }
             obj.setProperty("\$id", JsonPrimitive(id))
@@ -154,7 +154,7 @@ class ProJson {
 
         obj.setProperty("\$type", JsonPrimitive(kClass.simpleName ?: kClass.toString()))
 
-        /** Igual à parte 1: mapa nome → propriedade + ordem do construtor; fase 2 ignora @JsonIgnore */
+        /** Igual à fase 1: mapa nome → propriedade + ordem do construtor; fase 2 ignora @JsonIgnore */
         val propsByName =
             kClass.declaredMemberProperties
                 .filterIsInstance<KProperty1<Any, *>>()
@@ -171,7 +171,7 @@ class ProJson {
             val propName = propAnnotation?.name ?: prop.name
             val propValue = prop.get(instance)
 
-            /** Fase 2: referências → "$ref" (lista ou valor único) /
+            /** Fase 2: referências → "$ref" (lista ou valor único) */
             if (prop.hasAnnotation<Reference>()) {
                 obj.setProperty(propName, toJsonWithReferences(propValue, state))
             } else {
