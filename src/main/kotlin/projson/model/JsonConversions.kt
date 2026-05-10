@@ -1,7 +1,7 @@
 package projson.model
 
-import projson.JsonPrimitive
-import projson.JsonValue
+import projson.model.JsonPrimitive
+import projson.model.JsonValue
 
 //aceita apenas primitivos JSON na escrita (`setProperty`/`add`)
 fun jsonPrimitiveFromAny(value: Any?): JsonValue {

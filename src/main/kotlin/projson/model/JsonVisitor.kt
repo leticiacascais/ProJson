@@ -1,4 +1,4 @@
-package projson
+package projson.model
 
 //Visitor para travessia do modelo JSON
 interface JsonVisitor {

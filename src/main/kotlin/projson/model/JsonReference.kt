@@ -1,4 +1,7 @@
-package projson
+package projson.model
+
+import projson.model.JsonValue
+import projson.model.JsonVisitor
 
 //{"$ref": "<uuid>"}, isto é, o objeto aponta/usa para outros
 data class JsonReference(

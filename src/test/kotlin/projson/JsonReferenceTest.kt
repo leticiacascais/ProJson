@@ -1,5 +1,6 @@
 package projson
 
+import projson.model.JsonReference
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
