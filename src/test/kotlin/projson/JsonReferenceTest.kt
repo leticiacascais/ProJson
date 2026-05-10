@@ -31,7 +31,5 @@ class JsonReferenceTest {
         val t3 = Task("T3", null, listOf(t1, t2))
         val all = listOf(t1, t2, t3)
         val json = ProJson().toJson(all) as JsonArray
-
-
     }
 }

@@ -8,47 +8,44 @@ import kotlin.test.assertNull
 
 class JsonObjectTest {
 
-        data class Date(val day: Int, val month: Int, val year: Int)
+    data class Date(val day: Int, val month: Int, val year: Int)
 
-        @Test
-        fun testSetProperty() {
-            //manipulação — escrita de propriedades no objeto
-            val obj = JsonObject()
-            obj.setProperty("name", JsonPrimitive("Paulo"))
-            obj.setProperty("age", JsonPrimitive(30))
+    @Test
+    fun testSetProperty() {
+        val obj = JsonObject()
+        obj.setProperty("name", JsonPrimitive("Paulo"))
+        obj.setProperty("age", JsonPrimitive(30))
 
-            assertEquals("{\"name\": \"Paulo\", \"age\": 30}", obj.toString())
-        }
+        assertEquals("{\"name\": \"Paulo\", \"age\": 30}", obj.toString())
+    }
 
-        @Test
-        fun testGetProperty() {
-            //manipulação — leitura de propriedades no objeto
-            val obj = JsonObject()
-            val value = JsonPrimitive("Json")
-            obj.setProperty("message", value)
+    @Test
+    fun testGetProperty() {
+        val obj = JsonObject()
+        val value = JsonPrimitive("Json")
+        obj.setProperty("message", value)
 
-            assertEquals(value, obj.getProperty("message"))
-        }
+        assertEquals(value, obj.getProperty("message"))
+    }
 
-        @Test
-        fun testRemoveProperty() {
-            //manipulação — remoção de propriedades no objeto
-            val obj = JsonObject()
-            obj.setProperty("project", JsonPrimitive("JsonPro"))
-            obj.removeProperty("project")
+    @Test
+    fun testRemoveProperty() {
+        val obj = JsonObject()
+        obj.setProperty("project", JsonPrimitive("JsonPro"))
+        obj.removeProperty("project")
 
-            assertNull(obj.getProperty("project"))
-        }
+        assertNull(obj.getProperty("project"))
+    }
 
-        @Test
-        fun testJsonObject() {
-            val d= Date(31, 4, 2026)
-            val json = ProJson().toJson(d) as JsonObject
-            json.setProperty("year", 2027)
+    @Test
+    fun testJsonObject() {
+        val d = Date(31, 4, 2026)
+        val json = ProJson().toJson(d) as JsonObject
+        json.setProperty("year", 2027)
 
-            assertEquals("{\"\$type\": \"Date\", \"day\": 31, \"month\": 4, \"year\": 2027}", json.toString())
-
-        }
-
+        assertEquals("{\"\$type\": \"Date\", \"day\": 31, \"month\": 4, \"year\": 2027}", json.toString())
 
     }
+
+
+}

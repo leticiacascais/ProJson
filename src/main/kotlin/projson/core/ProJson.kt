@@ -8,14 +8,12 @@ import kotlin.reflect.KProperty1
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.primaryConstructor
 
-//classe responsável pela serialização de objetos para JSON
 class ProJson {
 
     fun toJson(value: Any?): JsonValue {
         return toJsonInternal(value)
     }
 
-    //converte qualquer valor kotlin em JsonValue
     private fun toJsonInternal(value: Any?): JsonValue {
         return when (value) {
             null -> JsonPrimitive(null)
