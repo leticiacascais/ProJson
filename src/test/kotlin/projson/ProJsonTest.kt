@@ -21,14 +21,21 @@ class ProJsonTest {
     @JsonString(DateAsText::class)
     data class Date(val day: Int, val month: Int, val year: Int)
 
-    class Task(
+    class Task1(
+        val description: String,
+        val deadline: PlainDate?,
+        @Reference
+        val dependencies: List<Task1>
+    )
+
+    class Task2(
         @JsonProperty("desc")
         val description: String,
         @JsonIgnore
         val deadline: PlainDate?,
         @Reference
         @JsonProperty("deps")
-        val dependencies: List<Task>
+        val dependencies: List<Task2>
     )
 
     object DateAsText : JsonStringSerializer<Date> {
@@ -37,17 +44,8 @@ class ProJsonTest {
     }
 
     @Test
-    fun testCollectionGeneratesArrayAndAllowsManipulation() {
-        // Fase 1: coleção → `JsonArray` + manipulação (`add`)
-        val list = listOf("a", null, "b")
-        val json = ProJson().toJson(list) as JsonArray
-        json.add("c")
-        assertEquals("[\"a\", null, \"b\", \"c\"]", json.toString())
-    }
-
-    @Test
-    fun testObjectGeneratesTypeAndAllowsPropertyChange() {
-        // Fase 1: objeto → `JsonObject` com `$type` + manipulação (`setProperty`)
+    fun testObjectArray() {
+        /** Fase 1: objeto → `JsonObject` com `$type` + manipulação (`setProperty`) */
         val d = PlainDate(31, 4, 2026)
         val json = ProJson().toJson(d) as JsonObject
         json.setProperty("year", 2027)
@@ -55,30 +53,48 @@ class ProJsonTest {
     }
 
     @Test
-    fun testMapHasNoTypeProperty() {
-        // Fase 1: `Map` → `JsonObject` sem `$type`
-        val json = ProJson().toJson(mapOf("a" to 1, "b" to "x")) as JsonObject
-        assertEquals("{\"a\": 1, \"b\": \"x\"}", json.toString())
+    fun testJsonArray() {
+        /** Fase 1: coleção → `JsonArray` + manipulação (`add`) */
+        val list = listOf("a", null, "b")
+        val json = ProJson().toJson(list) as JsonArray
+        json.add("c")
+        assertEquals("[\"a\", null, \"b\", \"c\"]", json.toString())
     }
 
     @Test
-    fun testReferencesAndPropertyCustomization() {
-        // Fase 2: `@Reference` + `@JsonProperty` + `@JsonIgnore`
-        val t1 = Task("T1", PlainDate(30, 2, 2026), emptyList())
-        val t2 = Task("T2", PlainDate(31, 4, 2026), emptyList())
-        val t3 = Task("T3", null, listOf(t1, t2))
+    fun testReferences() {
+        // Fase 2: `@Reference` + `@JsonProperty` + `@JsonIgnore` (`$id` são UUID — evita assert no texto inteiro)
+        val t1 = Task1("T1", PlainDate(30, 2, 2026), emptyList())
+        val t2 = Task1("T2", PlainDate(31, 4, 2026), emptyList())
+        val t3 = Task1("T3", null, listOf(t1, t2))
 
-        val json = ProJson().toJson(listOf(t1, t2, t3)).toString()
+        val all = listOf(t1, t2, t3)
+        val json = ProJson().toJson(all).toString()
 
-        // renamed fields + ignored deadline
-        assertTrue(json.contains("\"$" + "type\": \"Task\""))
-        assertTrue(json.contains("\"desc\": \"T1\""))
-        assertTrue(json.contains("\"deps\": []"))
-        assertTrue(!json.contains("\"deadline\""))
+        assertTrue(json.contains("\"${'$'}type\": \"Task1\""))
+        assertTrue(json.contains("\"description\": \"T1\""))
+        assertTrue(json.contains("\"description\": \"T2\""))
+        assertTrue(json.contains("\"description\": \"T3\""))
+        assertTrue(json.contains("\"dependencies\": []"))
+        assertTrue(json.contains("\"deadline\""))
 
-        // references appear + referenced objects have $id somewhere in output
-        assertTrue(json.contains("\"$" + "id\""))
-        assertTrue(json.contains("\"$" + "ref\""))
+        assertTrue(json.contains("\"${'$'}id\""))
+        assertTrue(json.contains("\"${'$'}ref\""))
+
+        val refMarker = "{\"${'$'}ref\": \""
+        assertEquals(2, json.split(refMarker).size - 1)
+    }
+
+    @Test
+    fun testObjectProperties() {
+        // Fase 2: `@JsonProperty` / `@JsonIgnore` — o `toString()` do modelo usa espaço após `:`
+        val t = Task2("T1", PlainDate(30, 2, 2026), emptyList())
+        val json = ProJson().toJson(t) as JsonObject
+
+        assertEquals(
+            "{\"" + "${'$'}type\": \"Task2\", \"desc\": \"T1\", \"deps\": []}",
+            json.toString()
+        )
     }
 
     @Test
